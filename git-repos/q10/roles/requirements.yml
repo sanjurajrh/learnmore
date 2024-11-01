@@ -1,0 +1,3 @@
+---
+- src: http://workstation.lab.example.com/example.tar
+  name: user.example

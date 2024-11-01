@@ -1,0 +1,37 @@
+---
+- name: backup the network configurations of cisco and eos devices
+  hosts: ios,eos
+  tasks:
+  - name: Backup cisco 
+    when: ansible_network_os == 'cisco.ios.ios'
+    cisco.ios.ios_config:
+      backup: yes
+    register: backup_cisco_location
+
+  - name: Backup eos
+    become: true
+    when: ansible_network_os == 'arista.eos.eos'
+    arista.eos.eos_config:
+      backup: yes
+    register: backup_eos_location
+
+  - name: Create the backup dir
+    ansible.builtin.file:
+      path: "/home/student/network_backup"
+      state: directory
+      recurse: true
+
+  - name: Copy the backup file to /home/student/network_backup (cisco)
+    ansible.builtin.copy:
+      src: "{{ backup_cisco_location.backup_path }}"
+      dest: "/home/student/network_backup/{{ inventory_hostname }}.cfg"
+    when: ansible_network_os == 'cisco.ios.ios'
+
+  - name: Copy the backup file to /home/studeny/network_backup (eos)
+    ansible.builtin.copy:
+      src: "{{ backup_eos_location.backup_path }}"
+      dest: "/home/student/network_backup/{{ inventory_hostname }}.cfg"
+    when: ansible_network_os == 'arista.eos.eos'
+
+      
+...

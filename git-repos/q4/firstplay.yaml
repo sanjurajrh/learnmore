@@ -1,0 +1,25 @@
+---
+- name: Collect facts from JUNOS devices
+  hosts: junos
+  gather_facts: false
+  tasks:
+  - name: Create the facts directory if it does not exist
+    ansible.builtin.file:
+      path: facts
+      state: directory
+  - name: Enable netconf 
+    vars:
+      ansible_connection: ansible.netcommon.network_cli
+    junipernetworks.junos.junos_netconf:
+      netconf_port: 830
+      state: present
+  - name: Gather junos facts 
+    junipernetworks.junos.junos_facts:
+      gather_subset: all
+    when: ansible_network_os == 'junipernetworks.junos.junos'
+
+  - name: Save facts to file 
+    ansible.builtin.copy:
+      content: "{{ ansible_facts | to_nice_json }}"
+      dest: "facts/{{ inventory_hostname }}.json"
+...

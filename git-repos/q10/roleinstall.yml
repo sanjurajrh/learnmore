@@ -1,0 +1,7 @@
+---
+- name: Install role on cisco
+  hosts: ios
+  become: true
+  roles:
+    - user.example
+...

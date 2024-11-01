@@ -1,0 +1,9 @@
+---
+- name: Create directory backup
+  hosts: localhost
+  tasks:
+  - name: Create the backup dir
+    ansible.builtin.file:
+      path: /home/student/backup
+      state: directory
+...

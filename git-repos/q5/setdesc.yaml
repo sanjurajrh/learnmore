@@ -1,0 +1,51 @@
+---
+- name: Set description
+  hosts: ios,eos
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Gather facts for ios 
+    when: ansible_network_os == 'cisco.ios.ios'
+    cisco.ios.ios_facts:
+      gather_subset: all
+    register: ios_facts
+
+  - name: Display the current values
+    when: ansible_network_os == 'cisco.ios.ios'
+    ansible.builtin.debug:
+      var: ios_facts
+    
+  - name: Set the description for cisco 
+    when: ansible_network_os == 'cisco.ios.ios'
+    cisco.ios.ios_config:
+      lines:
+      - description EX457
+      parents: '{{ item }}'
+    with_items:
+    - interface GigabitEthernet1
+    - interface GigabitEthernet2
+    notify: ios_save_changes
+
+  - name: Gather facts for eos
+    when: ansible_network_os == 'arista.eos.eos'
+    arista.eos.eos_facts:
+      gather_subset: all
+    register: eos_facts
+  - name: Dsiplay the current eos values
+    when: ansible_network_os == 'arista.eos.eos'
+    ansible.builtin.debug:
+      var: eos_facts
+  - name: Set the description for eos
+    arista.eos.eos_config:
+      lines:
+        - description EX457
+      parents: '{{ item }}'
+    with_items:
+    - interface Ethernet1
+    - interface Management1
+    when: ansible_network_os == 'arista.eos.eos'
+  handlers:
+    - name: ios_save_changes
+      cisco.ios.ios_config:
+        save_when: always
+...

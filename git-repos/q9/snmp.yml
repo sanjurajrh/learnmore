@@ -1,0 +1,75 @@
+---
+- name: Configure SNMP for Cisco and eos
+  hosts: ios,eos
+  gather_facts: false
+  tasks:
+    - name: Configure snmp for cisco 
+      when: ansible_network_os == 'cisco.ios.ios'
+      cisco.ios.ios_snmp_server:
+        state: merged
+        config:
+          location: 'Raleigh, NC'
+          contact: 'Network Engineering| neteng@company.com'
+          communities:
+            - acl_v4: snmpaclro
+              name: rocommunity2n4g!
+              ro: true
+            - acl_v4: snmpaclrw
+              name: rwcommunityd7g$v
+              rw: true
+          hosts: 
+            - community_string: 'm0n1t0r'
+              host: 172.25.1.10
+              informs: true
+              version: 2c
+          traps:
+            bgp:
+              enable: true
+            eigrp: true
+            hsrp: true
+            ospf:
+              cisco_specific:
+                error: true
+                lsa: true
+                retransmit: true
+            snmp:
+              authentication: true
+              coldstart: true
+              linkdown: true
+              linkup: true
+              warmstart: true
+    - name: Configure DNS settings for cisco
+      when: ansible_network_os == 'cisco.ios.ios'
+      cisco.ios.ios_system:
+        domain_search: "{{dns_domains }}"
+        name_servers: "{{ dns_name_servers }}"
+    - name: Configure snmp for eos
+      become: true
+      when: ansible_network_os == 'arista.eos.eos'
+      arista.eos.eos_snmp_server:
+        config:
+          communities:
+            - name: "comm5"
+              acl_v4: "list4"
+              ro: True
+          contact: "admin"
+          hosts:
+            - host: "host02"
+              user: "user01"
+              udp_port: 23
+              version: "2c"
+          traps:
+            bgp: 
+              enabled: true
+            snmp:
+              authentication: true
+              enabled: true
+              link_down: true
+              link_up: true
+    - name: configure DNS settings for eos 
+      become: true
+      when: ansible_network_os == 'arista.eos.eos'
+      arista.eos.eos_system:
+        name_servers: "{{ dns_name_servers }}"
+        domain_list: "{{ dns_domains }}"
+...
